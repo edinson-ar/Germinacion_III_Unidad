@@ -1,0 +1,335 @@
+---
+title: "Efecto de diferentes concentraciones de Cloruro de sodio sobre la germinación de Frijol (Phaseolus vulgaris) y Soja (Glycine max)"
+author: "Acuña Ramirez, Edinson Pooll;
+         Hidrogo Paredes, Jhinmy Yhanner;
+         Mondragón Herrera, Edwin;
+         Quispe Aguilar, Alex Rolando;
+         Rojas Campos, Griselida"
+format:
+  html:
+    toc: true
+    toc-location: left
+    number-sections: true
+    embed-resources: true
+    output-file: index
+editor_options: 
+  chunk_output_type: console
+---
+
+# Introducción
+
+::: {style="<div style"}
+La salinidad del suelo es uno de los factores abióticos que con mayor frecuencia limita el establecimiento de los cultivos porque reduce el potencial osmótico de la solución circundante a la semilla, retrasa la fase I de imbibición y dificulta la activación de enzimas clave para la germinación (Bouzroud et al., 2023; Yadav et al., 2023).En leguminosas, grupo que incluye a la soya (Glycine max) y al frijol común (Phaseolus vulgaris) el estrés salino provoca además desbalances iónicos, acumulación de especies reactivas de oxígeno y alteraciones hormonales que comprometen la viabilidad de la plántula y, en consecuencia, el rendimiento final del cultivo (Shu et al., 2017). En frijol, concentraciones de 50 a 150 mM de NaCl reducen significativamente el porcentaje de germinación y el crecimiento inicial, con inhibición casi total a 150 mM (Mena Méndez et al., 2015).Por otro lado, la velocidad con que las semillas absorben agua es un factor decisivo cuando se combina con salinidad. Pereira y Masetto (2021) demostraron que una hidratación “rápida” en soya dispara la degradación del ADN y disminuye el vigor, mientras que una imbibición lenta preserva la integridad genómica y mejora la emergencia en campo. Estas evidencias indican que concentraciones moderadas de NaCl (50–150 mM) rango presente en suelos salinos o en aguas de riego de baja calidad son suficientes para comprometer la fase inicial de desarrollo en ambas leguminosas, y que la tasa de imbibición puede agravar o atenuar los daños. Con base en lo anterior, el presente experimento evaluará el efecto de cuatro niveles crecientes de salinidad (0, 50, 100 y 150 mM NaCl) sobre la germinación de semillas de frijol y soya, usando cinco repeticiones de 25 semillas por tratamiento.
+:::
+
+# Objetivos
+
+## Objetivo general
+
+Evaluar el efecto de diferentes concentraciones de Cloruro de sodio sobre la germinación de Frijol (Phaseolus vulgaris) y Soja (Glycine max)
+
+## Objetivo especifico
+
+Cuantificar el número de semillas germinadas y determinar el porcentaje de germinación de Phaseolus vulgaris y Glycine max bajo diferentes concentraciones de cloruro de sodio.
+
+Determinar la variación de germinación en respuesta a distintas concentraciones de cloruro de sodio.
+
+# Materiales y métodos
+
+**Obtención del material vegetal e instalación**
+
+Se obtuvo medio kilogramo de semillas de frijol (Phaseolus vulgaris) y de soya (Glycine max) del mercado Requejo de Chachapoyas, con coordenadas 6°13'39.9"S  77°52'23.2"W, y estas fueron seleccionadas para realizar la prueba de germinación. Posteriormente, se prepararon las soluciones de cloruro de sodio en diferentes concentraciones (0, 50, 100, 150 mM). Luego, cada semilla se sembró en tapers para ver los efectos de diferentes concentraciones de cloruro de sodio. Se colocaron 25 semillas sobre papel toalla humedecido con 10 ml de solución, esta solución fue aplicada cada 48 horas. Finalmente se etiquetó con sus respectivas leyendas tanto para frijol como soja, lo cual facilitó el seguimiento más organizado y preciso del comportamiento del grupo de semillas.
+
+**Diseño experimental**
+
+Se evaluaron cuatro concentraciones de NaCl. El experimento se montó bajo un Diseño factorial en bloques 4 x 2, siendo el primer factor las concentraciones de NaCl  (0, 50, 100 y 150 mM) y el segundo factor las especies (Frijol y soja). Habiendo un total de  8 tratamientos con 5 réplicas. En cada réplica hay 25 semillas.
+
+**Evaluación y análisis de datos**
+
+Los datos obtenidos se realizan a partir de las variables dependientes. Los parámetros incluyen: Semillas germinadas (grs), Germinabilidad (grp) la unidad de medición es en porcentaje (%) y la variación de germinación (vgt) donde la unidad de medición es el Tiempo (t2). Para las variables que cumplen con los supuestos de normalidad (p \> 0.05) se aplicará un análisis de varianza factorial (ANOVA) para evaluar las diferencias entre tratamientos y se emplea la prueba de Tukey para comparar medias.
+
+# Resultados
+
+## Análisis de datos
+
+### Paquetes a cargar
+
+```{r}
+source("https://inkaverse.com/setup.r")
+library(GerminaR)
+library(dplyr)
+library(agricolae)
+
+```
+
+### Importar datos
+
+```{r}
+url <- "https://docs.google.com/spreadsheets/d/1clA0TdvpeIv2PDiLcT7SQB4Aiy-Bbx2BUDXObOCL2R4/edit?usp=sharing"
+
+gs <- as_sheets_id(url)
+
+fb <- range_read(gs
+                 , sheet = "fb") %>% 
+  mutate(across(c(NaCl, Especie, block), as.factor)) %>% 
+  as.data.frame()
+
+str(fb)
+```
+
+### Conjunto de datos
+
+```{r}
+gsm <- ger_summary(SeedN = "seed"
+                   , evalName = "d"
+                   , data = fb
+                   )
+gsm %>% kable()
+
+# Prosopis data set processed
+
+gsm %>% 
+  head(6) %>% 
+  mutate(across(where(is.numeric), ~round(., 2))) %>% 
+  kable(caption = "Function ger_summary performe ten germination indices")
+view (gsm)
+```
+
+### Semillas germinadas (grs)
+
+```{r}
+# analysis of variance
+
+av <- aov(grs ~ block + NaCl*Especie, data = gsm)
+summary(av)
+# mean comparison test
+
+mc_grs <- ger_testcomp(aov = av
+                       , comp = c("NaCl", "Especie")
+                       , type = "tukey"
+                       )
+
+# data result
+
+mc_grs$table %>% 
+   kable(caption = "Germinated seeds")
+
+# bar graphics for germination percentage
+
+grs <- mc_grs$table %>% 
+   fplot(data = .
+       , type = "bar"
+       , x = "Especie"
+       , y = "grs"
+       , group = "NaCl"
+       , ylimits = c(0, 30, 5)
+       , ylab = "Semillas germinadas"
+       , xlab = "Especie"
+       , glab = "NaCl"
+       , error = "ste"
+       , sig = "sig"
+       , color = F
+       )
+
+grs
+```
+
+### Germinabilidad o porcentaje de germinación (grp)
+
+```{r}
+
+# analysis of variance
+
+av <- aov(grp ~ block + NaCl*Especie, data = gsm)
+summary(av)
+# mean comparison test
+
+mc_grp <- ger_testcomp(aov = av
+                       , comp = c("NaCl", "Especie")
+                       , type = "tukey"
+                       )
+
+# data result
+
+mc_grp$table %>% 
+   kable(caption = "Germination percentage mean comparision")
+
+# bar graphics for germination percentage
+
+grp <- mc_grp$table %>% 
+   fplot(data = .
+       , type = "bar"
+       , x = "Especie"
+       , y = "grp"
+       , group = "NaCl"
+       , ylimits = c(0, 120, 30)
+       , ylab = "Germination ('%')"
+       , xlab = "Especie"
+       , glab = "NaCl"
+       , error = "ste"
+       , sig = "sig"
+       , color = F
+       )
+
+grp
+```
+
+### Variación de germinación (vgt)
+
+```{r}
+
+## Germination variance (vgt)
+
+# analysis of variance
+
+av <- aov(vgt ~ block + NaCl*Especie, data = gsm)
+summary(av)
+
+# mean comparison test
+
+mc_vgt <- ger_testcomp(aov = av
+                       , comp = c("NaCl", "Especie")
+                       , type = "tukey")
+
+# data result
+
+mc_vgt$table %>% 
+   kable(caption = "Germination variance")
+
+# bar graphics for variance germination variance
+
+vgt <- mc_vgt$table %>% 
+   fplot(data = .
+       , type = "bar"
+       , x = "Especie"
+       , y = "vgt"
+       , group = "NaCl"
+       , ylimits = c(0, 120, 30)
+       , ylab = "Variación de germinación"
+       , xlab = "Especie"
+       , glab = "NaCl"
+       , error = "ste"
+       , sig = "sig"
+       , color = F
+       )
+
+vgt
+```
+
+## Análisis acumulativo de la germinación
+
+### Análisis en el tiempo para especie
+
+```{r}
+
+# data frame with percentage or relative germination in time by especie
+
+git <- ger_intime(Factor = "Especie"
+                  , SeedN = "seed"
+                  , evalName = "d"
+                  , method = "percentage"
+                  , data = fb
+                  )
+
+# data result
+
+git %>% 
+   head(6) %>% 
+   kable(caption = "Cumulative germination by especie factor")
+
+# graphic germination in time by Especie
+
+Especie <- git %>% 
+   fplot(data = .
+        , type = "line"
+        , x = "evaluation"
+        , y = "mean"
+        , group = "Especie"
+        , ylimits = c(0, 110, 10)
+        , ylab = "Germination ('%')"
+        , xlab = "Day"
+        , glab = "Especie"
+        , color = T
+        , error = "ste"
+        )
+Especie
+```
+
+## Gráficos
+
+```{r}
+install.packages("cowplot")
+library(cowplot)
+
+## graficos
+
+class(grs)
+class(grp)
+class(vgt)
+class(Especie)
+
+## Combinar gráficos
+
+figura_completa <- plot_grid(grs, grp, vgt, Especie, 
+                             labels = c("a", "b", "c", "d"),
+                             ncol = 2,
+                             rel_widths = c(1, 1),
+                             rel_heights = c(1, 1),
+                             align = "hv",
+                             label_size = 12)
+
+# Mostrar la figura
+print(figura_completa)
+
+# Guardar figura
+
+ggsave("Análisis_ger.png", figura_completa, width = 12, height = 8)
+
+
+
+```
+
+En el experimento, se observó que las semillas de soja no germinaron en ninguno de los tratamientos, incluido el control. Solo ha germinado el frijol.
+
+![Tabla de resultados](tabla.jpeg)
+
+**Semillas germinadas (grs)**
+
+A partir del primer día, solo germinaron algunas, a excepción de frijol. Hubo diferencias significativas en todos los tratamientos (Fig. 1a), pero el tratamiento con menor germinación fue para la concentración de 100 mM en frijol con un dato de 22.5 semillas, además se observó que en altas concentraciones de sales, se quemaron los ápices radiculares
+
+**Germinabilidad (grp)**
+
+Se tuvo una germinabilidad al 100.8%  en la concentración de 100 mM para la especie de soja. Pero el valor más bajo fue de 93.6 para la concentración de 150 mM. En todos los tratamientos se observaron diferencias significativas (Fig. 1b). Y a partir del día 3 (Fig. 1d) se observa que hay un incremento de porcentaje de germinación para la especie de frijol.
+
+**Variación de germinación**
+
+Cuando la varianza es baja, las semillas germinan casi al mismo tiempo, en la mayoría de los tratamientos se observan diferencias significativas (Fig. 1c) , pero solo en la especie de frijol no las hay.
+
+```{}
+```
+
+# Discusión
+
+En cuanto al número de semillas germinadas, se observó que la especie de frijol logró mantener altos niveles de germinación en todos los tratamientos, incluyendo aquellos con salinidad moderada y alta. Este resultado coincide con investigaciones previas que señalan que algunas variedades de Phaseolus vulgaris presentan mecanismos de tolerancia osmótica durante las etapas iniciales del desarrollo, lo cual les permite germinar incluso bajo condiciones de estrés salino (Mena Méndez et al., 2015). A pesar de la presencia de cloruro de sodio en las soluciones, los tratamientos con 50 mM y 150 mM no impidieron la germinación, lo que indica que estas concentraciones no superaron el umbral fisiológico de tolerancia del frijol en la fase germinativa.
+
+El porcentaje de germinación fue relativamente alto en el tratamiento con 100 mM de NaCl, alcanzando un 100.8%. Si bien este valor podría parecer contradictorio frente a estudios que reportan inhibición a concentraciones similares (Shu et al., 2017), es posible que se deba a diferencias en la procedencia y calidad de las semillas utilizadas. Resultados similares han sido documentados en condiciones donde la humedad es constante y suficiente, permitiendo que la salinidad no afecte de forma inmediata la germinación (Yadav et al., 2023). No obstante, en tratamientos con mayores concentraciones de sal, se observaron daños visibles como quemado de ápices radiculares, lo que indica que el desarrollo posterior sí puede verse afectado (Bouzroud et al., 2023).
+
+Por otro lado, la especie de soya no mostró germinación en ninguno de los tratamientos, incluyendo el control. Este resultado difiere de lo esperado, ya que en condiciones sin estrés se debería haber observado al menos una germinación parcial. Esto podría deberse a una pérdida de viabilidad de las semillas o a un daño provocado por una imbibición rápida, un fenómeno crítico en Glycine max (Pereira & Masetto, 2021). Se ha demostrado que la velocidad de hidratación puede causar rupturas en membranas celulares y afectar la estabilidad del ADN, comprometiendo el proceso germinativo incluso en ausencia de estrés salino (Shu et al., 2017).
+
+En cuanto a la variación de germinación (vgt), los datos muestran que las semillas de frijol germinaron en un intervalo temporal similar entre tratamientos, reflejando una respuesta homogénea del lote, incluso bajo estrés. Esta uniformidad temporal puede considerarse un rasgo deseable desde el punto de vista agronómico, ya que facilita una emergencia sincrónica del cultivo. En contraste, la soya no mostró germinación alguna, lo que impidió evaluar su comportamiento bajo condiciones salinas. La alta sensibilidad de la soya a la salinidad durante la germinación también ha sido documentada por Rahman et al. (2008), quienes reportaron una drástica reducción en la germinación de soya a concentraciones superiores a 75 mM de NaCl.
+
+# Conclusiones
+
+El frijol presentó la mayor cantidad de semillas germinadas a 50 y 150 mM (24.8 semillas), la germinabilidad más alta fue de 100.8% a 100 mM, y la mayor variación de germinación fue 2.38 a 100 mM. En cambio, la soya no germinó en ningún tratamiento. Esto indica que el frijol mostró mayor tolerancia al estrés salino en la fase de germinación.
+
+# Referencias bibliográficas
+
+-   Bouzroud, S., Youssef, H., Shaimaa, M., & Moukhli, A. (2023). Seed germination under salinity stress: Physiological, molecular and biotechnological perspectives. Plants, 12(2), 327. https://doi.org/10.3390/plants12020327
+
+-   Finch-Savage, W. E., & Leubner-Metzger, G. (2006). Seed dormancy and the control of germination. New Phytologist, 171(3), 501–523. https://doi.org/10.1111/j.1469-8137.2006.01787.x
+
+-   Mena Méndez, S., Díaz Dueñas, Y., & Guerra Santos, E. (2015). Efecto del estrés salino sobre la germinación y el crecimiento de plántulas de Phaseolus vulgaris L. Cultivos Tropicales, 36(1), 76–81.
+
+-   Pereira, C. E., & Masetto, T. E. (2021). Rapid imbibition reduces seed quality and longevity in soybean. Agricultural Sciences, 12(7), 970–982. <https://doi.org/10.4236/as.2021.127062>
+
+-   Rahman, M. A., Hossain, M. S., Alam, M. Z., & Karim, M. A. (2008). Effects of salinity on germination and seedling growth of soybean. Journal of the Bangladesh Agricultural University, **6**(2), 227–232.
